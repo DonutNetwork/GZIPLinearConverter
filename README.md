@@ -1,6 +1,3 @@
-# GZIPConverter
-(credits to linear paper etc)
-
 # Linear region file format for Minecraft
 
 Linear region format saves about 50% of disk space in OW and Nether and 95% in The End.
