@@ -5,6 +5,7 @@ import os
 import os.path
 import argparse
 import zlib
+import time
 
 from glob import glob
 from linear import open_region_linear, write_region_anvil, open_region_anvil, write_region_linear
@@ -38,6 +39,8 @@ def convert_file(args):
         skipped_counter.value += 1
         return
 
+    start_time = time.time()  # Start timing
+
     try:
         if conversion_mode == "linear2mca":
             region = open_region_linear(source_file)
@@ -50,6 +53,11 @@ def convert_file(args):
 
         if log:
             print(source_file, "converted, compression %3d%%" % (100 * destination_size / source_size))
+
+        end_time = time.time()  # End timing
+        elapsed_time = end_time - start_time
+        print(f"Time taken to convert {source_file}: {elapsed_time:.2f} seconds")
+
         converted_counter.value += 1
     except Exception:
         import traceback
