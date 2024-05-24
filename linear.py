@@ -56,7 +56,8 @@ def open_region_linear(file_path):
     file_coords = file_path.split('/')[-1].split('.')[1:3]
     region_x, region_z = int(file_coords[0]), int(file_coords[1])
 
-    raw_region = open(file_path, 'rb').read()
+    with open(file_path, 'rb') as f:
+            raw_region = f.read()
     mtime = os.path.getmtime(file_path)
 
     signature, version, newest_timestamp, compression_level, chunk_count, complete_region_length, reserved = struct.unpack_from(">QBQbhIQ", raw_region, 0)
@@ -282,14 +283,7 @@ def write_region_anvil_to_bytes(region: Region, compression_level=6):
         else:
             sectors.append(b'')
 
-    for i in range(REGION_DIMENSION * REGION_DIMENSION):
-        if region.chunks[i] is not None:
-            sector_count = len(sectors[i]) // 4096
-            header_chunks.append(struct.pack(">IB", start_sectors[i], sector_count)[1:])
-        else:
-            header_chunks.append(b"\x00\x00\x00\x00")
-
-    for i in range(REGION_DIMENSION * REGION_DIMENSION):
-        header_timestamps.append(struct.pack(">I", region.timestamps[i]))
+    header_chunks = [struct.pack(">IB", start_sectors[i], len(sectors[i]) // 4096)[1:] if region.chunks[i] is not None else b"\x00\x00\x00\x00" for i in range(REGION_DIMENSION * REGION_DIMENSION)]
+    header_timestamps = [struct.pack(">I", region.timestamps[i]) for i in range(REGION_DIMENSION * REGION_DIMENSION)]
 
     return b''.join(header_chunks) + b''.join(header_timestamps) + b''.join(sectors)
